@@ -10,13 +10,16 @@ import {
 } from "./firebase-config.js";
 
 
-// ===============================
-// OSEK LTD LIVE DATABASE
-// ===============================
+// ========================================
+// OSEK LTD - FIREBASE LIVE DATABASE
+// ========================================
 
 
-// নতুন Report Add করার Function
-window.addReport = async function (reportData) {
+// ========================================
+// ADD REPORT
+// ========================================
+
+export async function addReport(reportData) {
 
     try {
 
@@ -24,45 +27,46 @@ window.addReport = async function (reportData) {
 
         const newReportRef = push(reportsRef);
 
+        const now = Date.now();
+
         const data = {
             ...reportData,
-            createdAt: Date.now(),
-            updatedAt: Date.now()
+            createdAt: now,
+            updatedAt: now
         };
 
         await set(newReportRef, data);
 
 
-        // History তে Save
+        // Save activity to history
         await addHistory({
             action: "New Report Added",
             reportId: newReportRef.key,
             data: data,
-            time: Date.now()
+            time: now
         });
 
 
-        console.log("Report added successfully!");
+        console.log("✅ Report added:", newReportRef.key);
 
         return true;
 
     } catch (error) {
 
-        console.error("Error adding report:", error);
+        console.error("❌ Add report error:", error);
 
         alert("Database error: " + error.message);
 
         return false;
     }
-};
+}
 
 
+// ========================================
+// UPDATE REPORT
+// ========================================
 
-// ===============================
-// REPORT UPDATE
-// ===============================
-
-window.updateReport = async function (reportId, updatedData) {
+export async function updateReport(reportId, updatedData) {
 
     try {
 
@@ -71,48 +75,50 @@ window.updateReport = async function (reportId, updatedData) {
             `reports/${reportId}`
         );
 
+        const now = Date.now();
+
         await update(reportRef, {
             ...updatedData,
-            updatedAt: Date.now()
+            updatedAt: now
         });
 
 
-        // History
         await addHistory({
             action: "Report Updated",
             reportId: reportId,
             data: updatedData,
-            time: Date.now()
+            time: now
         });
 
 
-        console.log("Report updated!");
+        console.log("✅ Report updated!");
 
         return true;
 
     } catch (error) {
 
-        console.error(error);
+        console.error("❌ Update error:", error);
 
-        alert("Update failed!");
+        alert("Update failed: " + error.message);
 
         return false;
     }
-};
+}
 
 
-
-// ===============================
+// ========================================
 // DELETE REPORT
-// ===============================
+// ========================================
 
-window.deleteReport = async function (reportId) {
+export async function deleteReport(reportId) {
 
-    const confirmDelete = confirm(
+    const confirmed = confirm(
         "Are you sure you want to delete this report?"
     );
 
-    if (!confirmDelete) return;
+    if (!confirmed) {
+        return false;
+    }
 
 
     try {
@@ -122,7 +128,6 @@ window.deleteReport = async function (reportId) {
         );
 
 
-        // History
         await addHistory({
             action: "Report Deleted",
             reportId: reportId,
@@ -130,21 +135,29 @@ window.deleteReport = async function (reportId) {
         });
 
 
-        console.log("Report deleted!");
+        console.log("✅ Report deleted!");
+
+        return true;
 
     } catch (error) {
 
-        console.error(error);
+        console.error("❌ Delete error:", error);
 
-        alert("Delete failed!");
+        alert("Delete failed: " + error.message);
+
+        return false;
     }
-};
+}
 
 
+// Make available globally too
+window.updateReport = updateReport;
+window.deleteReport = deleteReport;
 
-// ===============================
+
+// ========================================
 // ADD HISTORY
-// ===============================
+// ========================================
 
 async function addHistory(historyData) {
 
@@ -159,100 +172,123 @@ async function addHistory(historyData) {
 }
 
 
-
-// ===============================
+// ========================================
 // LIVE REPORT LISTENER
-// ===============================
+// ========================================
 
 export function listenToReports(callback) {
 
     const reportsRef = ref(database, "reports");
 
+    onValue(
+        reportsRef,
 
-    onValue(reportsRef, (snapshot) => {
+        (snapshot) => {
 
-        const data = snapshot.val();
+            const data = snapshot.val();
 
-        const reports = [];
+            const reports = [];
 
 
-        if (data) {
+            if (data) {
 
-            Object.keys(data).forEach((key) => {
+                Object.keys(data).forEach((key) => {
 
-                reports.push({
-                    id: key,
-                    ...data[key]
+                    reports.push({
+                        id: key,
+                        ...data[key]
+                    });
+
                 });
 
-            });
+            }
+
+
+            callback(reports);
+
+        },
+
+        (error) => {
+
+            console.error(
+                "❌ Reports listener error:",
+                error
+            );
 
         }
-
-
-        callback(reports);
-
-    });
-
+    );
 }
 
 
-
-// ===============================
+// ========================================
 // LIVE HISTORY LISTENER
-// ===============================
+// ========================================
 
 export function listenToHistory(callback) {
 
     const historyRef = ref(database, "history");
 
+    onValue(
+        historyRef,
 
-    onValue(historyRef, (snapshot) => {
+        (snapshot) => {
 
-        const data = snapshot.val();
+            const data = snapshot.val();
 
-        const history = [];
+            const history = [];
 
 
-        if (data) {
+            if (data) {
 
-            Object.keys(data).forEach((key) => {
+                Object.keys(data).forEach((key) => {
 
-                history.push({
-                    id: key,
-                    ...data[key]
+                    history.push({
+                        id: key,
+                        ...data[key]
+                    });
+
                 });
 
-            });
+            }
+
+
+            // Newest first
+            history.sort(
+                (a, b) =>
+                    (b.timestamp || 0) -
+                    (a.timestamp || 0)
+            );
+
+
+            callback(history);
+
+        },
+
+        (error) => {
+
+            console.error(
+                "❌ History listener error:",
+                error
+            );
 
         }
-
-
-        // নতুনটা আগে দেখাবে
-        history.sort(
-            (a, b) => b.timestamp - a.timestamp
-        );
-
-
-        callback(history);
-
-    });
-
+    );
 }
 
 
+// ========================================
+// CLEAR HISTORY
+// ========================================
 
-// ===============================
-// CLEAR ALL HISTORY
-// ===============================
+export async function clearHistory() {
 
-window.clearHistory = async function () {
-
-    const confirmClear = confirm(
-        "Clear all history?"
+    const confirmed = confirm(
+        "Are you sure you want to clear ALL history?"
     );
 
-    if (!confirmClear) return;
+    if (!confirmed) {
+        return;
+    }
 
 
     try {
@@ -261,46 +297,68 @@ window.clearHistory = async function () {
             ref(database, "history")
         );
 
-        alert("History cleared!");
+
+        alert("History cleared successfully!");
+
+        console.log("✅ History cleared!");
 
     } catch (error) {
 
-        console.error(error);
+        console.error(
+            "❌ Clear history error:",
+            error
+        );
 
-        alert("Failed to clear history!");
+        alert(
+            "Failed to clear history: " +
+            error.message
+        );
     }
-};
+}
 
 
+window.clearHistory = clearHistory;
 
-// ===============================
-// CHECK DATABASE CONNECTION
-// ===============================
 
-window.checkFirebaseConnection = async function () {
+// ========================================
+// FIREBASE CONNECTION CHECK
+// ========================================
+
+export async function checkFirebaseConnection() {
 
     try {
 
-        await get(ref(database));
+        await get(
+            ref(database)
+        );
+
 
         console.log(
-            "Firebase connected successfully!"
+            "🔥 Firebase connected successfully!"
         );
+
 
         return true;
 
     } catch (error) {
 
         console.error(
-            "Firebase connection failed:",
+            "❌ Firebase connection failed:",
             error
         );
 
+
         return false;
     }
-};
+}
 
 
+window.checkFirebaseConnection =
+    checkFirebaseConnection;
 
-// Firebase Connection Check
+
+// ========================================
+// STARTUP CHECK
+// ========================================
+
 checkFirebaseConnection();
