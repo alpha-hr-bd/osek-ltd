@@ -1,16 +1,13 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-
 import {
     getDatabase,
     ref,
-    set,
     push,
+    set,
     onValue,
     update,
-    remove,
-    get
+    remove
 } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
-
 
 const firebaseConfig = {
     apiKey: "AIzaSyDbslFgD45fmc3FrEL0RaHadM_PmfuU0ZM",
@@ -23,23 +20,15 @@ const firebaseConfig = {
     measurementId: "G-9H5X23S9PH"
 };
 
-
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-
-
-// Initialize Realtime Database
 const database = getDatabase(app);
 
-
-// Export সব Firebase functions
 export {
     database,
     ref,
-    set,
     push,
+    set,
     onValue,
     update,
-    remove,
-    get
+    remove
 };
