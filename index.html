@@ -1,481 +1,220 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>OSEK LTD | Live Dashboard</title>
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>OSEK LTD</title>
 
     <link rel="stylesheet" href="style.css">
+
 </head>
 
 <body>
 
-    <header class="topbar">
-        <div class="brand">
-            <div class="logo">O</div>
+<header class="topbar">
 
-            <div>
-                <h1>OSEK LTD</h1>
-                <span>Live Database Dashboard</span>
-            </div>
-        </div>
+    <div class="brand">
 
-        <div class="status">
-            <span class="status-dot"></span>
-            Firebase Live
-        </div>
-    </header>
+        <div class="logo">O</div>
 
-
-    <main class="container">
-
-        <section class="hero">
-            <div>
-                <p class="eyebrow">OSEK LTD</p>
-                <h2>Live Report Management</h2>
-                <p>
-                    Manage reports and view live updates from the Firebase
-                    Realtime Database.
-                </p>
-            </div>
-
-            <button class="primary-btn" onclick="openReportModal()">
-                + Add Report
-            </button>
-        </section>
-
-
-        <section class="stats">
-
-            <div class="stat-card">
-                <span>Total Reports</span>
-                <strong id="totalReports">0</strong>
-            </div>
-
-            <div class="stat-card">
-                <span>Today's Updates</span>
-                <strong id="todayUpdates">0</strong>
-            </div>
-
-            <div class="stat-card">
-                <span>History</span>
-                <strong id="totalHistory">0</strong>
-            </div>
-
-            <div class="stat-card">
-                <span>Database</span>
-                <strong class="online">ONLINE</strong>
-            </div>
-
-        </section>
-
-
-        <section class="panel">
-
-            <div class="panel-header">
-                <div>
-                    <h3>Live Reports</h3>
-                    <p>Updates appear automatically.</p>
-                </div>
-
-                <button class="refresh-btn" onclick="location.reload()">
-                    ↻ Refresh
-                </button>
-            </div>
-
-            <div id="reportsContainer" class="reports">
-                <div class="empty">
-                    <div class="empty-icon">📊</div>
-                    <h3>No reports yet</h3>
-                    <p>Add your first report to Firebase.</p>
-                </div>
-            </div>
-
-        </section>
-
-
-        <section class="panel">
-
-            <div class="panel-header">
-                <div>
-                    <h3>Activity History</h3>
-                    <p>All database activity.</p>
-                </div>
-
-                <button class="danger-btn" onclick="clearHistory()">
-                    Clear History
-                </button>
-            </div>
-
-            <div id="historyContainer" class="history">
-                <div class="empty">
-                    No history available.
-                </div>
-            </div>
-
-        </section>
-
-    </main>
-
-
-    <!-- Add Report Modal -->
-
-    <div id="reportModal" class="modal">
-
-        <div class="modal-box">
-
-            <button class="close" onclick="closeReportModal()">×</button>
-
-            <h2>Add New Report</h2>
-            <p>Create a new live report.</p>
-
-            <form id="reportForm">
-
-                <label>Report Title</label>
-
-                <input
-                    type="text"
-                    id="reportTitle"
-                    placeholder="Enter report title"
-                    required
-                >
-
-
-                <label>Description</label>
-
-                <textarea
-                    id="reportDescription"
-                    placeholder="Enter report details"
-                    rows="5"
-                    required
-                ></textarea>
-
-
-                <label>Status</label>
-
-                <select id="reportStatus">
-
-                    <option value="Pending">
-                        Pending
-                    </option>
-
-                    <option value="Processing">
-                        Processing
-                    </option>
-
-                    <option value="Completed">
-                        Completed
-                    </option>
-
-                </select>
-
-
-                <button class="primary-btn full" type="submit">
-                    Save Report
-                </button>
-
-            </form>
-
+        <div>
+            <h1>OSEK LTD</h1>
+            <span>Live Database</span>
         </div>
 
     </div>
 
+    <a
+        href="admin.html"
+        class="admin-link"
+    >
+        Admin
+    </a>
 
-    <footer>
-        © 2026 OSEK LTD — Live Database System
-    </footer>
-
-
-    <script type="module">
-
-        import {
-            addReport,
-            listenToReports,
-            listenToHistory
-        } from "./script.js";
+</header>
 
 
-        const reportsContainer =
-            document.getElementById("reportsContainer");
+<main class="container">
 
-        const historyContainer =
-            document.getElementById("historyContainer");
+    <section class="hero">
 
+        <p class="eyebrow">
+            OSEK LTD
+        </p>
 
-        const totalReports =
-            document.getElementById("totalReports");
+        <h2>
+            Live Reports
+        </h2>
 
-        const totalHistory =
-            document.getElementById("totalHistory");
+        <p>
+            Real-time reports powered by Firebase.
+        </p>
 
-        const todayUpdates =
-            document.getElementById("todayUpdates");
-
-
-        // =========================
-        // REPORTS
-        // =========================
-
-        listenToReports((reports) => {
-
-            totalReports.textContent = reports.length;
-
-            if (!reports.length) {
-
-                reportsContainer.innerHTML = `
-                    <div class="empty">
-                        <div class="empty-icon">📊</div>
-                        <h3>No reports yet</h3>
-                        <p>Add your first report to Firebase.</p>
-                    </div>
-                `;
-
-                return;
-            }
+    </section>
 
 
-            reportsContainer.innerHTML = reports
-                .sort((a, b) =>
-                    (b.updatedAt || 0) -
-                    (a.updatedAt || 0)
-                )
-                .map(report => `
+    <section class="stats">
 
-                    <article class="report-card">
+        <div class="stat-card">
+            <span>Total Reports</span>
+            <strong id="totalReports">0</strong>
+        </div>
 
-                        <div class="report-top">
+        <div class="stat-card">
+            <span>Today</span>
+            <strong id="todayReports">0</strong>
+        </div>
 
-                            <div>
-                                <h3>
-                                    ${escapeHTML(report.title || "Untitled")}
-                                </h3>
+        <div class="stat-card">
+            <span>Status</span>
+            <strong class="online">
+                LIVE
+            </strong>
+        </div>
 
-                                <small>
-                                    ${formatDate(report.updatedAt)}
-                                </small>
-                            </div>
-
-                            <span class="badge ${statusClass(report.status)}">
-                                ${escapeHTML(report.status || "Pending")}
-                            </span>
-
-                        </div>
+    </section>
 
 
-                        <p>
-                            ${escapeHTML(
-                                report.description || ""
-                            )}
-                        </p>
+    <section class="panel">
+
+        <div class="panel-header">
+
+            <div>
+                <h3>Live Reports</h3>
+                <p>
+                    Updates automatically.
+                </p>
+            </div>
+
+        </div>
+
+        <div
+            id="reports"
+            class="reports"
+        >
+            Loading...
+        </div>
+
+    </section>
+
+</main>
 
 
-                        <div class="report-id">
-                            ID: ${report.id}
-                        </div>
-
-                    </article>
-
-                `)
-                .join("");
-
-        });
+<footer>
+    © 2026 OSEK LTD
+</footer>
 
 
-        // =========================
-        // HISTORY
-        // =========================
+<script type="module">
 
-        listenToHistory((history) => {
-
-            totalHistory.textContent = history.length;
+import {
+    listenToReports
+} from "./script.js";
 
 
-            const today = new Date()
-                .toDateString();
+const reports =
+    document.getElementById("reports");
+
+const total =
+    document.getElementById("totalReports");
+
+const today =
+    document.getElementById("todayReports");
 
 
-            todayUpdates.textContent =
-                history.filter(item =>
-                    new Date(
-                        item.timestamp || item.time
-                    ).toDateString() === today
-                ).length;
+listenToReports(data => {
+
+    total.textContent = data.length;
+
+    const todayDate =
+        new Date().toDateString();
+
+    today.textContent =
+        data.filter(item =>
+            item.createdAt &&
+            new Date(
+                item.createdAt
+            ).toDateString() === todayDate
+        ).length;
 
 
-            if (!history.length) {
+    if (!data.length) {
 
-                historyContainer.innerHTML = `
-                    <div class="empty">
-                        No history available.
-                    </div>
-                `;
+        reports.innerHTML = `
+            <div class="empty">
+                <div>📊</div>
+                <h3>No reports</h3>
+                <p>No report has been published yet.</p>
+            </div>
+        `;
 
-                return;
-            }
+        return;
+    }
 
 
-            historyContainer.innerHTML =
-                history.map(item => `
+    reports.innerHTML =
+        data.map(item => `
 
-                    <div class="history-item">
+            <article class="report-card">
 
-                        <div class="history-icon">
-                            ${item.action?.includes("Deleted")
-                                ? "🗑️"
-                                : item.action?.includes("Updated")
-                                ? "✏️"
-                                : "➕"}
-                        </div>
+                <div class="report-head">
 
-                        <div class="history-content">
+                    <div>
+                        <h3>
+                            ${safe(item.title)}
+                        </h3>
 
-                            <strong>
-                                ${escapeHTML(
-                                    item.action || "Activity"
-                                )}
-                            </strong>
-
-                            <span>
-                                ${formatDate(
-                                    item.timestamp || item.time
-                                )}
-                            </span>
-
-                        </div>
-
+                        <small>
+                            ${format(item.updatedAt)}
+                        </small>
                     </div>
 
-                `).join("");
+                    <span class="badge">
+                        ${safe(item.status)}
+                    </span>
 
-        });
+                </div>
 
+                <p>
+                    ${safe(item.description)}
+                </p>
 
-        // =========================
-        // FORM
-        // =========================
+            </article>
 
-        document
-            .getElementById("reportForm")
-            .addEventListener("submit", async (e) => {
+        `).join("");
 
-                e.preventDefault();
-
-
-                const title =
-                    document.getElementById(
-                        "reportTitle"
-                    ).value.trim();
+});
 
 
-                const description =
-                    document.getElementById(
-                        "reportDescription"
-                    ).value.trim();
+function safe(value) {
+
+    return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
 
 
-                const status =
-                    document.getElementById(
-                        "reportStatus"
-                    ).value;
+function format(time) {
 
+    if (!time)
+        return "Unknown";
 
-                if (!title || !description) return;
+    return new Date(time)
+        .toLocaleString("en-BD");
 
+}
 
-                const button =
-                    e.target.querySelector("button");
-
-
-                button.disabled = true;
-                button.textContent = "Saving...";
-
-
-                await addReport({
-                    title,
-                    description,
-                    status
-                });
-
-
-                e.target.reset();
-
-                button.disabled = false;
-                button.textContent = "Save Report";
-
-                closeReportModal();
-
-            });
-
-
-        // =========================
-        // HELPERS
-        // =========================
-
-        function formatDate(timestamp) {
-
-            if (!timestamp) return "Unknown time";
-
-            return new Date(timestamp)
-                .toLocaleString("en-BD", {
-                    dateStyle: "medium",
-                    timeStyle: "short"
-                });
-
-        }
-
-
-        function statusClass(status) {
-
-            return String(status || "")
-                .toLowerCase()
-                .replace(/\s+/g, "-");
-
-        }
-
-
-        function escapeHTML(value) {
-
-            return String(value)
-                .replaceAll("&", "&amp;")
-                .replaceAll("<", "&lt;")
-                .replaceAll(">", "&gt;")
-                .replaceAll('"', "&quot;")
-                .replaceAll("'", "&#039;");
-
-        }
-
-
-        window.openReportModal = function () {
-
-            document
-                .getElementById("reportModal")
-                .classList.add("show");
-
-        };
-
-
-        window.closeReportModal = function () {
-
-            document
-                .getElementById("reportModal")
-                .classList.remove("show");
-
-        };
-
-
-        window.addEventListener("click", (e) => {
-
-            const modal =
-                document.getElementById("reportModal");
-
-            if (e.target === modal) {
-                closeReportModal();
-            }
-
-        });
-
-    </script>
+</script>
 
 </body>
 </html>
