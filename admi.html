@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>OSEK LTD | Admin</title>
+
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+
+<div
+    id="loginPage"
+    class="login-page"
+>
+
+    <div class="login-box">
+
+        <div class="logo big">
+            O
+        </div>
+
+        <h1>OSEK LTD</h1>
+
+        <p>Admin Panel</p>
+
+
+        <input
+            id="username"
+            type="text"
+            placeholder="Username"
+        >
+
+
+        <input
+            id="password"
+            type="password"
+            placeholder="Password"
+        >
+
+
+        <button
+            onclick="login()"
+            class="primary-btn full"
+        >
+            Login
+        </button>
+
+
+        <div
+            id="loginError"
+            class="error"
+        ></div>
+
+    </div>
+
+</div>
+
+
+
+<div
+    id="adminPage"
+    style="display:none"
+>
+
+<header class="topbar">
+
+    <div class="brand">
+
+        <div class="logo">
+            O
+        </div>
+
+        <div>
+            <h1>OSEK LTD</h1>
+            <span>Admin Panel</span>
+        </div>
+
+    </div>
+
+
+    <div>
+
+        <a
+            href="index.html"
+            class="admin-link"
+        >
+            Website
+        </a>
+
+        <button
+            onclick="logout()"
+            class="logout"
+        >
+            Logout
+        </button>
+
+    </div>
+
+</header>
+
+
+<main class="container">
+
+
+<section class="hero">
+
+    <div>
+
+        <p class="eyebrow">
+            ADMIN
+        </p>
+
+        <h2>
+            Manage Reports
+        </h2>
+
+        <p>
+            Add and manage live Firebase reports.
+        </p>
+
+    </div>
+
+</section>
+
+
+
+<section class="panel">
+
+    <div class="panel-header">
+
+        <div>
+
+            <h3>Add Report</h3>
+
+            <p>
+                Publish a new live report.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <form
+        id="reportForm"
+        class="form"
+    >
+
+        <label>
+            Title
+        </label>
+
+        <input
+            id="title"
+            required
+            placeholder="Report title"
+        >
+
+
+        <label>
+            Description
+        </label>
+
+        <textarea
+            id="description"
+            rows="5"
+            required
+            placeholder="Report details"
+        ></textarea>
+
+
+        <label>
+            Status
+        </label>
+
+        <select id="status">
+
+            <option>
+                Pending
+            </option>
+
+            <option>
+                Processing
+            </option>
+
+            <option>
+                Completed
+            </option>
+
+        </select>
+
+
+        <button
+            class="primary-btn"
+            type="submit"
+        >
+            Publish Report
+        </button>
+
+    </form>
+
+</section>
+
+
+
+<section class="panel">
+
+    <div class="panel-header">
+
+        <div>
+
+            <h3>Reports</h3>
+
+            <p>
+                Edit or delete reports.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div
+        id="adminReports"
+        class="reports"
+    >
+        Loading...
+    </div>
+
+</section>
+
+
+
+<section class="panel">
+
+    <div class="panel-header">
+
+        <div>
+
+            <h3>History</h3>
+
+            <p>
+                Database activity.
+            </p>
+
+        </div>
+
+
+        <button
+            onclick="clearAllHistory()"
+            class="danger-btn"
+        >
+            Clear History
+        </button>
+
+    </div>
+
+
+    <div
+        id="history"
+        class="history"
+    >
+        Loading...
+    </div>
+
+</section>
+
+
+</main>
+
+</div>
+
+
+
+<script type="module">
+
+import {
+    addReport,
+    listenToReports,
+    listenToHistory,
+    deleteReport,
+    clearHistory
+} from "./script.js";
+
+
+// =============================
+// LOGIN
+// =============================
+
+window.login = function () {
+
+    const username =
+        document.getElementById(
+            "username"
+        ).value.trim();
+
+    const password =
+        document.getElementById(
+            "password"
+        ).value;
+
+
+    if (
+        username === "user-osekltd" &&
+        password === "dns@osekltd"
+    ) {
+
+        sessionStorage.setItem(
+            "osekAdmin",
+            "true"
+        );
+
+        showAdmin();
+
+    } else {
+
+        document.getElementById(
+            "loginError"
+        ).textContent =
+            "Wrong username or password.";
+
+    }
+
+};
+
+
+function showAdmin() {
+
+    document.getElementById(
+        "loginPage"
+    ).style.display = "none";
+
+    document.getElementById(
+        "adminPage"
+    ).style.display = "block";
+
+}
+
+
+if (
+    sessionStorage.getItem(
+        "osekAdmin"
+    ) === "true"
+) {
+
+    showAdmin();
+
+}
+
+
+// =============================
+// LOGOUT
+// =============================
+
+window.logout = function () {
+
+    sessionStorage.removeItem(
+        "osekAdmin"
+    );
+
+    location.reload();
+
+};
+
+
+// =============================
+// ADD REPORT
+// =============================
+
+document
+    .getElementById("reportForm")
+    .addEventListener(
+        "submit",
+        async e => {
+
+            e.preventDefault();
+
+
+            const button =
+                e.target.querySelector(
+                    "button"
+                );
+
+            button.disabled = true;
+            button.textContent =
+                "Publishing...";
+
+
+            try {
+
+                await addReport({
+
+                    title:
+                        document
+                        .getElementById(
+                            "title"
+                        )
+                        .value
+                        .trim(),
+
+                    description:
+                        document
+                        .getElementById(
+                            "description"
+                        )
+                        .value
+                        .trim(),
+
+                    status:
+                        document
+                        .getElementById(
+                            "status"
+                        )
+                        .value
+
+                });
+
+
+                e.target.reset();
+
+                alert(
+                    "Report published successfully!"
+                );
+
+            } catch (error) {
+
+                alert(
+                    "Error: " +
+                    error.message
+                );
+
+            }
+
+
+            button.disabled = false;
+
+            button.textContent =
+                "Publish Report";
+
+        }
+    );
+
+
+// =============================
+// ADMIN REPORTS
+// =============================
+
+listenToReports(data => {
+
+    const box =
+        document.getElementById(
+            "adminReports"
+        );
+
+
+    if (!data.length) {
+
+        box.innerHTML =
+            `<div class="empty">
+                No reports.
+            </div>`;
+
+        return;
+    }
+
+
+    box.innerHTML =
+        data.map(item => `
+
+        <article class="report-card">
+
+            <div class="report-head">
+
+                <div>
+
+                    <h3>
+                        ${safe(item.title)}
+                    </h3>
+
+                    <small>
+                        ${format(item.updatedAt)}
+                    </small>
+
+                </div>
+
+                <span class="badge">
+                    ${safe(item.status)}
+                </span>
+
+            </div>
+
+
+            <p>
+                ${safe(item.description)}
+            </p>
+
+
+            <button
+                class="danger-btn"
+                onclick="removeReport('${item.id}')"
+            >
+                Delete
+            </button>
+
+        </article>
+
+    `).join("");
+
+});
+
+
+window.removeReport = async function(id) {
+
+    if (
+        confirm(
+            "Delete this report?"
+        )
+    ) {
+
+        await deleteReport(id);
+
+    }
+
+};
+
+
+// =============================
+// HISTORY
+// =============================
+
+listenToHistory(data => {
+
+    const box =
+        document.getElementById(
+            "history"
+        );
+
+
+    if (!data.length) {
+
+        box.innerHTML =
+            `<div class="empty">
+                No history.
+            </div>`;
+
+        return;
+    }
+
+
+    box.innerHTML =
+        data.map(item => `
+
+        <div class="history-item">
+
+            <div class="history-icon">
+                ${item.action?.includes("Deleted")
+                    ? "🗑️"
+                    : "➕"}
+            </div>
+
+            <div class="history-content">
+
+                <strong>
+                    ${safe(item.action)}
+                </strong>
+
+                <span>
+                    ${format(item.timestamp)}
+                </span>
+
+            </div>
+
+        </div>
+
+    `).join("");
+
+});
+
+
+window.clearAllHistory =
+    async function() {
+
+        if (
+            confirm(
+                "Clear all history?"
+            )
+        ) {
+
+            await clearHistory();
+
+            alert(
+                "History cleared!"
+            );
+
+        }
+
+    };
+
+
+// =============================
+// HELPERS
+// =============================
+
+function safe(value) {
+
+    return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+
+}
+
+
+function format(time) {
+
+    if (!time)
+        return "Unknown";
+
+    return new Date(time)
+        .toLocaleString("en-BD");
+
+}
+
+</script>
+
+</body>
+</html>
