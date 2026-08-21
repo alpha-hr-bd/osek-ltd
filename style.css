@@ -970,3 +970,26 @@ footer {
     }
 
 }
+/* ================================
+   PROFIT / LOSS
+================================ */
+
+.badge.profit {
+    color: #15803d;
+    background: #dcfce7;
+    border: 1px solid #bbf7d0;
+}
+
+.badge.loss {
+    color: #dc2626;
+    background: #fee2e2;
+    border: 1px solid #fecaca;
+}
+
+.report-card.profit {
+    border-left: 4px solid #16a34a;
+}
+
+.report-card.loss {
+    border-left: 4px solid #dc2626;
+}
